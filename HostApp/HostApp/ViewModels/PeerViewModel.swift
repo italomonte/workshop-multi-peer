@@ -7,11 +7,14 @@ class PeerViewModel: NSObject, ObservableObject {
     
     let peerId: MCPeerID
     var hostId: MCPeerID?
+    
     let session: MCSession
     let advertiser: MCNearbyServiceAdvertiser
     
     @Published var showingPermissionRequest = false
-    var permissionRequest: PermitionRequest?
+    @Published var invitationPeerName = ""
+    var invitationHandler: ((Bool, MCSession?) -> Void)?
+    
     
     var isAdvertising = false {
         didSet {
@@ -44,6 +47,11 @@ class PeerViewModel: NSObject, ObservableObject {
             .store(in: &subscriptions)
     }
     
+    func respondToInvitation(accept: Bool) {
+        if let handler = invitationHandler {
+            handler(accept, accept ? session : nil)
+        }
+    }
 }
 
 extension PeerViewModel: MCSessionDelegate {
@@ -52,14 +60,13 @@ extension PeerViewModel: MCSessionDelegate {
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
-        print("didReceive bytes \(data.count) bytes")
         guard let message = String(data: data, encoding: .utf8) else {
             return
         }
         messagePublisher.send(message)
         
     }
-
+    
     
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
         
@@ -76,21 +83,12 @@ extension PeerViewModel: MCSessionDelegate {
 
 extension PeerViewModel: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        permissionRequest = PermitionRequest(
-            peerId: peerID,
-            onRequest: { [weak self] permission in
-                invitationHandler(permission, permission ? self?.session : nil)
-            }
-        )
-        hostId = peerId
+        
+        self.invitationHandler = invitationHandler
+        self.invitationPeerName = peerID.displayName
         showingPermissionRequest = true
+        hostId = peerId
     }
-}
-
-struct PermitionRequest: Identifiable {
-    let id = UUID()
-    let peerId: MCPeerID
-    let onRequest: (Bool) -> Void
 }
 
 

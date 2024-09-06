@@ -31,18 +31,28 @@ struct PeerView: View {
         }
         .alert(isPresented: $vm.showingPermissionRequest ){
             Alert(
-                title: Text("Do you want to join \(vm.permissionRequest?.peerId.displayName ?? "")"),
-                primaryButton: .default(Text("Yes"), action: {
-                    vm.permissionRequest?.onRequest(true)
-                    
-                    
-                    
+                title: Text("Convite de \(vm.invitationPeerName)"),
+                message: Text("Deseja aceitar o convite para se conectar?"),
+                primaryButton: .default(Text("Aceitar"), action: {
+                    vm.respondToInvitation(accept: true)
                 }),
-                secondaryButton: .cancel(Text("No"), action: {
-                    vm.permissionRequest?.onRequest(false)
-                    
+                secondaryButton: .cancel(Text("Recusar"), action: {
+                    vm.respondToInvitation(accept: false)
                 })
             )
+//            Alert(
+//                title: Text("Do you want to join \(vm.permissionRequest?.peerId.displayName ?? "")"),
+//                primaryButton: .default(Text("Yes"), action: {
+//                    vm.permissionRequest?.onRequest(true)
+//                    
+//                    
+//                    
+//                }),
+//                secondaryButton: .cancel(Text("No"), action: {
+//                    vm.permissionRequest?.onRequest(false)
+//                    
+//                })
+//            )
         }
         
 
