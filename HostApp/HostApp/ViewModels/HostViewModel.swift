@@ -16,7 +16,6 @@ class HostViewModel: NSObject, ObservableObject {
     
     var isBrowsing = false {
         didSet {
-            print(isBrowsing)
             isBrowsing ? browser.startBrowsingForPeers() : browser.stopBrowsingForPeers()
         }
     }
@@ -46,7 +45,6 @@ class HostViewModel: NSObject, ObservableObject {
         guard let selectedPeer else {
             return
         }
-        print(selectedPeer)
         if !(session.connectedPeers.contains(selectedPeer)) {
             browser.invitePeer(selectedPeer, to: session, withContext: nil, timeout: 60)
         }
@@ -96,7 +94,6 @@ extension HostViewModel: MCSessionDelegate {
 extension HostViewModel: MCNearbyServiceBrowserDelegate {
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         
-        print(peerID)
         
         // Verificar se dispositivo encontrado ja foi adicionado a lista de browsed peers
         var peerBrowsed = false
@@ -111,7 +108,6 @@ extension HostViewModel: MCNearbyServiceBrowserDelegate {
             browsedPeers.append(peerID)
         }
         
-        print(browsedPeers)
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {

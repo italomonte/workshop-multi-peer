@@ -5,7 +5,7 @@ import Combine
 
 class PeerViewModel: NSObject, ObservableObject {
     
-    let peerId: MCPeerID
+    let peerId = MCPeerID(displayName: UIDevice.current.name)
     var hostId: MCPeerID?
     
     let session: MCSession
@@ -18,19 +18,14 @@ class PeerViewModel: NSObject, ObservableObject {
     
     var isAdvertising = false {
         didSet {
-            print(isAdvertising)
             isAdvertising ? advertiser.startAdvertisingPeer() : advertiser.stopAdvertisingPeer()
         }
     }
     
-    var message: String = ""
     @Published var messages: [String] = []
     
-    let messagePublisher = PassthroughSubject<String, Never>()
-    var subscriptions = Set<AnyCancellable>()
-    
     override init() {
-        self.peerId = MCPeerID(displayName: UIDevice.current.name)
+        
         self.session = MCSession(peer: peerId)
         self.advertiser = MCNearbyServiceAdvertiser(peer: peerId, discoveryInfo: nil, serviceType: "nearby-devices")
         
@@ -38,13 +33,7 @@ class PeerViewModel: NSObject, ObservableObject {
         
         session.delegate = self
         advertiser.delegate = self
-        
-        messagePublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in
-                self?.messages.append($0)
-            }
-            .store(in: &subscriptions)
+                
     }
     
     func respondToInvitation(accept: Bool) {
@@ -63,7 +52,10 @@ extension PeerViewModel: MCSessionDelegate {
         guard let message = String(data: data, encoding: .utf8) else {
             return
         }
-        messagePublisher.send(message)
+        
+        DispatchQueue.main.async {
+            self.messages.append(message)
+        }
         
     }
     
@@ -83,11 +75,12 @@ extension PeerViewModel: MCSessionDelegate {
 
 extension PeerViewModel: MCNearbyServiceAdvertiserDelegate {
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping (Bool, MCSession?) -> Void) {
-        
-        self.invitationHandler = invitationHandler
-        self.invitationPeerName = peerID.displayName
-        showingPermissionRequest = true
-        hostId = peerId
+        DispatchQueue.main.async {
+            self.invitationHandler = invitationHandler
+            self.invitationPeerName = peerID.displayName
+            self.showingPermissionRequest = true
+            self.hostId = self.peerId
+        }
     }
 }
 
