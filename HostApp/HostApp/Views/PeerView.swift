@@ -40,19 +40,6 @@ struct PeerView: View {
                     vm.respondToInvitation(accept: false)
                 })
             )
-//            Alert(
-//                title: Text("Do you want to join \(vm.permissionRequest?.peerId.displayName ?? "")"),
-//                primaryButton: .default(Text("Yes"), action: {
-//                    vm.permissionRequest?.onRequest(true)
-//                    
-//                    
-//                    
-//                }),
-//                secondaryButton: .cancel(Text("No"), action: {
-//                    vm.permissionRequest?.onRequest(false)
-//                    
-//                })
-//            )
         }
         
 
